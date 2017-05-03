@@ -1,5 +1,11 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+# fetch git resource
+[ "$TRACE" == "true" ] && set -x
+set -e
 set -o pipefail
+
+source /opt/resource/git/common.sh
 
 DEST_DIR="$1"
 
@@ -7,6 +13,14 @@ GIT_DEST_DIR="$(mktemp -d -t git-resource-destination.XXXXXX)"
 
 /opt/resource/git/in "$GIT_DEST_DIR"
 
+
+PAYLOAD=$(echo /tmp/git-resource-request.*)
+
+load_pubkey $PAYLOAD
+configure_git_ssl_verification $PAYLOAD
+configure_credentials $PAYLOAD
+
+# begin 
 cd "$GIT_DEST_DIR"
 
 [[ -f pom.xml ]] || { echo "There is no pom.xml in the git repo." >&2; exit 1; }
